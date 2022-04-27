@@ -1,12 +1,25 @@
 <template>
   <div class="container">
-  <nav>
-  <router-link to="/">Home</router-link> |
-  <router-link to="/create">Create</router-link> |
-  <router-link to="/list">List</router-link> |
-  <router-link to="/about">About</router-link> |
+    <header class="d-flex justify-content-center py-3">
+      
+      <ul class="nav nav-pills">
+        <li class="nav-item">
+          <router-link to="/" class="nav-link">Home</router-link> 
 
-  </nav>
+        </li>
+        <li class="nav-item">
+        <router-link to="/create" class="nav-link">Create</router-link> 
+        </li>
+        <li class="nav-item">
+        <router-link to="/list" class="nav-link">List</router-link> 
+        </li>
+        <li class="nav-item">
+        <router-link to="/about" class="nav-link">About</router-link> 
+        </li>
+
+      </ul>
+      
+    </header>
   <router-view />
 
   </div>
