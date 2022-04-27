@@ -1,45 +1,44 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from '@/pages/HomeView'
-import CreateView from '@/pages/CreateView'
-import UpdateView from '@/pages/UpdateView'
-import DeleteView from '@/pages/DeleteView'
-import ListView from '@/pages/ListView'
-import AboutView from '@/pages/AboutView'
+import HomeView from '@/pages/HomeView.vue';
+import CreateView from '@/pages/CreateView.vue';
+import UpdateView from '@/pages/UpdateView.vue';
+import DetailView from '@/pages/DetailView.vue';
+import ListView from '@/pages/ListView.vue';
+import AboutView from '@/pages/AboutView.vue';
 
 const router = createRouter({
-    history : createWebHistory(),
-    routes : [
+    history: createWebHistory(),
+    routes: [
         {
-            path : '/',
-            name : 'Home',
-            component : HomeView
+            path: '/',
+            name: 'Home',
+            component: HomeView
         },
         {
-            path : '/create',
-            name : 'Create',
-            component : CreateView
+            path: '/create',
+            name: 'Create',
+            component: CreateView
         },
         {
-            path : '/update',
-            name : 'Update',
-            component : UpdateView
+            path: '/update',
+            name: 'Update',
+            component: UpdateView
         },
         {
-            path : '/delete',
-            name : 'Delete',
-            component : DeleteView
+            path: '/detail/:id',
+            name: 'Detail',
+            component: DetailView
         },
         {
-            path : '/list',
-            name : 'List',
-            component : ListView
+            path: '/list',
+            name: 'List',
+            component: ListView
         },
         {
-            path : '/about',
-            name : 'About',
-            component : AboutView
+            path: '/about',
+            name: 'About',
+            component: AboutView
         }
     ],
 });
-
 export default router;
