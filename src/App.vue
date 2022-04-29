@@ -4,23 +4,23 @@
       
       <ul class="nav nav-pills">
         <li class="nav-item">
-          <router-link to="/" class="nav-link">Home</router-link> 
+          <router-link :to="{name:'Home'}" class="nav-link">Home</router-link> 
 
         </li>
         <li class="nav-item">
-        <router-link to="/create" class="nav-link">Create</router-link> 
+        <router-link :to="{name : 'Create'}" class="nav-link">Create</router-link> 
         </li>
         <li class="nav-item">
-        <router-link to="/list" class="nav-link">List</router-link> 
+        <router-link :to="{name : 'List'}" class="nav-link">List</router-link> 
         </li>
         <li class="nav-item">
-        <router-link to="/about" class="nav-link">About</router-link> 
+        <router-link :to="{name : 'About'}" class="nav-link">About</router-link> 
         </li>
 
       </ul>
       
     </header>
-  <router-view />
+  <router-view/>
 
   </div>
 </template>

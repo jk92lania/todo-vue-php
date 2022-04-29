@@ -14,12 +14,12 @@
           <div class="form-group">
             <label for="body">내용</label>
             <textarea v-model="todo.body" class="form-control" name="body" id="body" rows="3"></textarea>
-            <small id="helpId" class="form-text text-muted">내용을 입력하시요</small>
+            <small id="helpId" class="form-text text-muted">내용을 입력하세요</small>
           </div>
 
           <div class="btn-group" role="group">
             <button type="submit" class="btn btn-success">확인</button>
-            <button type="button" class="btn btn-warning">취소</button>
+            <button type="button" class="btn btn-warning" @click="moveList">취소</button>
           </div>
 
         </form>
@@ -48,7 +48,9 @@ export default {
       .then(data => {
         if(data.result == 1) {
           // list 화면으로 이동
-          router.push('/list');
+          router.push({
+            name : 'List'
+          });
         } else {
           console.log('서버에서 자료가 오지 않았어요');
         }
@@ -56,9 +58,16 @@ export default {
       .catch() // 에러
     }
 
+    const moveList = () => {
+      router.push({
+        name : 'List'
+      })
+    }
+
     return {
       todo,
-      onSubmit
+      onSubmit,
+      moveList
     }
   }
 

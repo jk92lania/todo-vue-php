@@ -6,7 +6,10 @@ import DetailView from '@/pages/DetailView.vue';
 import ListView from '@/pages/ListView.vue';
 import AboutView from '@/pages/AboutView.vue';
 
+
+
 const router = createRouter({
+    
     history: createWebHistory(),
     routes: [
         {
@@ -20,7 +23,7 @@ const router = createRouter({
             component: CreateView
         },
         {
-            path: '/update',
+            path: '/update/:id',
             name: 'Update',
             component: UpdateView
         },
@@ -38,7 +41,9 @@ const router = createRouter({
             path: '/about',
             name: 'About',
             component: AboutView
-        }
+        },
+        
     ],
+    
 });
 export default router;
