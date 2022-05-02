@@ -11,7 +11,10 @@
             <tr>
               <th>No</th>
               <th>Title</th>
-              <th>Complete</th>
+              <th>
+                Complete
+                <input type="checkbox" class="ml-2 mr-2" v-model="allComplete" @change="toggleAllComplete()">
+              </th>
               <th></th>
             </tr>
           </thead>
@@ -19,11 +22,16 @@
             <tr v-for="(item, index) in todos" :key="item.id">
               <td>{{index + 1}}</td>
               <td><span @click="moveDetail(item.id)" class="detail">{{item.title}}</span></td>
-              <td>{{item.complete}}</td>
+              <td>
+                <input type="checkbox" class="ml-2 mr-2" :id="item.id" v-model="item.active" @change="toggleTodo(item)">
+                <span class="form-check-label" :class="item.active == false? 'active' : '' ">
+                  {{item.active ? "완료" : "진행중"}}
+                </span>
+              </td>
               <td>
                 <div class="btn-group" role="group">
                   <button class="btn btn-primary" @click="editTodo(item.id)">수정</button>
-                  <button class="btn btn-danger" @click="deleteTodo(item.id)">삭제</button>
+                  <button class="btn btn-danger" @click="openModal(item.id)">삭제</button>
                 </div>
               </td>
             </tr>
@@ -33,26 +41,39 @@
     </div>
     <nav aria-label="Page navigation example">
       <ul class="pagination">
-        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+        <li class="page-item" v-show="page_now != 1">
+          <a class="page-link" href="#" @click="getInfo(page_now - 1)">Previous</a>
+        </li>
 
         <li class="page-item" v-for="item in page_total" :key="item">
-          <a class="page-link" href="#" @click="getInfo(item)">{{item}}</a>
+          <a class="page-link" href="#" @click="getInfo(item)" :class="page_now == item ? 'active' : '' ">{{item}}</a>
         </li>
         
-        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+        <li class="page-item" v-show="page_now != page_total">
+          <a class="page-link" href="#" @click="getInfo(page_now + 1)">Next</a>
+          </li>
       </ul>
     </nav>
+    <ModalWin v-if="showModal" @close="closeModal" @delete="deleteTodo" />
   </div>
+
 </template>
 
 <script>
-import {ref} from 'vue'
-import {useRouter} from 'vue-router'
+import {ref} from 'vue';
+import {useRouter} from 'vue-router';
+import ModalWin from '@/components/ModalWin.vue';
 
 export default {
+  components : {
+    ModalWin
+  },
   setup() {    
     // 자료 보관 배열
     const todos = ref([]);
+    
+    const allTrue = ref(0);
+    const allComplete = ref(false);
 
     // 서버 자료 읽어오기
     const getInfo = (_page = 1) => {
@@ -61,20 +82,100 @@ export default {
       .then(res => res.json())
       .then(data => {
         todos.value = data.result;
+        // todos의 종류는 배열이다.
+        // 배열의 for를 이용 접근해서 만약에 각 배열의 complete 가 0, 1이냐 따라서
+        // 그 값을 반영하는 객체를 추가한다.
+        allTrue.value = 0;
+        allComplete.value = false;
+        for(let item of todos.value) {
+          if(item.complete === '0') {
+            item.active = false;
+          } else {
+            item.active = true;
+            allTrue.value++;
+          }
+        }
+        changeAllComplete();
       })
       .catch()
     }
 
-    const deleteTodo = (_id) => {
-      fetch(`http://paragon.dothome.co.kr/data_delete.php?id=${_id}`)
+    // modal 보일지 말지 
+    const showModal = ref(false);
+    // 선택된 id를 저장
+    const deleteId = ref(null);
+
+    const closeModal = () => {
+      showModal.value = false;
+      deleteId.value = null;
+    }
+
+    const openModal = (_id) => {
+      deleteId.value = _id;
+      showModal.value = true;
+    }
+
+    const deleteTodo = () => {
+      fetch(`http://paragon.dothome.co.kr/data_delete.php?id=${deleteId.value}`)
       .then(res => res.json() )
       .then( data => {
         console.log(data);
-        // 목록갱신
-        getInfo();
+        if(data.result == 1) {
+          showModal.value = false;
+          deleteId.value = null;
+          // 목록갱신
+          getInfo();
+          // getTotal();
+
+        }
       })
       .catch()
     }
+    
+    const toggleAllComplete = () => {
+      if(allComplete.value == false) {
+        console.log('true -> false');
+        for(let item of todos.value) {
+          item.active = false;
+            item.complete = '0';
+            toggleTodo(item);
+        }
+      } else {
+        console.log('false -> true');
+        for(let item of todos.value) {
+          item.active = true;
+            item.complete = '1';
+            toggleTodo(item);
+        }
+      }
+      changeAllComplete();
+    }
+
+    const changeAllComplete = () => {
+      if(allTrue.value == todos.value.length) {
+        allComplete.value = true;
+      } else {
+        allComplete.value = false;
+      }
+    }
+
+    const toggleTodo = (_obj) => {
+      if(_obj.active == true) {
+        _obj.complete = '1';
+        allTrue.value++;
+      } else {
+        _obj.complete = '0';
+        allTrue.value--;
+      }
+      fetch(`http://paragon.dothome.co.kr/data_update.php?id=${_obj.id}&title=${_obj.title}&body=${_obj.body}&complete=${_obj.complete}`)
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        changeAllComplete();        
+      })
+      .catch()
+    }
+
 
     const router = useRouter();
     const moveDetail = (_id) => {
@@ -136,7 +237,16 @@ export default {
       editTodo,
       writeTodo,
       page_total,
-      getInfo
+      getInfo,
+      page_now,
+
+      closeModal,
+      openModal,
+      showModal,
+
+      toggleTodo,
+      toggleAllComplete,
+      allComplete
 
     }
   }
@@ -156,4 +266,10 @@ export default {
 .bt-write {
   float: right;
 }
+
+.active {
+  background-color: palevioletred;
+  color: aliceblue;
+}
+
 </style>
