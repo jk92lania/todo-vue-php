@@ -4,6 +4,12 @@
       <div class="card-header">
         Todo List
         <button class="btn btn-success bt-write" @click="writeTodo">글쓰기</button>
+        
+        <!-- search -->
+        <div class="input-group mr-2 search">
+          <input type="form-control" placeholder="검색" v-model="searchTxt" @keyup.enter="getTotalSearch()">
+        </div>
+
       </div>
       <div class="card-body">
         <table class="table">
@@ -39,7 +45,7 @@
         </table>
       </div>
     </div>
-    <nav aria-label="Page navigation example">
+    <nav aria-label="Page navigation example" v-show="page_total > 1">
       <ul class="pagination">
         <li class="page-item" v-show="page_now != 1">
           <a class="page-link" href="#" @click="getInfo(page_now - 1)">Previous</a>
@@ -60,7 +66,7 @@
 </template>
 
 <script>
-import {ref} from 'vue';
+import {ref, watch} from 'vue';
 import {useRouter} from 'vue-router';
 import ModalWin from '@/components/ModalWin.vue';
 
@@ -78,6 +84,11 @@ export default {
     // 서버 자료 읽어오기
     const getInfo = (_page = 1) => {
       page_now.value = _page;
+      if(searchActive.value == true) {
+        // 검색중
+        searchTodo();
+        return;
+      }
       fetch(`http://paragon.dothome.co.kr/data_read.php?page_now=${page_now.value}&data_count=${data_count.value}`)
       .then(res => res.json())
       .then(data => {
@@ -122,29 +133,32 @@ export default {
         console.log(data);
         if(data.result == 1) {
           showModal.value = false;
-          deleteId.value = null;
+          deleteId.value = null;  
+          allTrue.value--;   
           // 목록갱신
-          getInfo();
-          // getTotal();
-
+          // getInfo();          
+          getTotal();
+        } else {
+          console.log('삭제 실패')
         }
+
       })
       .catch()
     }
     
     const toggleAllComplete = () => {
       if(allComplete.value == false) {
+        allTrue.value = todos.value.length;
         console.log('true -> false');
         for(let item of todos.value) {
           item.active = false;
-            item.complete = '0';
             toggleTodo(item);
         }
       } else {
+        allTrue.value = 0;
         console.log('false -> true');
         for(let item of todos.value) {
           item.active = true;
-            item.complete = '1';
             toggleTodo(item);
         }
       }
@@ -170,8 +184,10 @@ export default {
       fetch(`http://paragon.dothome.co.kr/data_update.php?id=${_obj.id}&title=${_obj.title}&body=${_obj.body}&complete=${_obj.complete}`)
       .then(res => res.json())
       .then(data => {
-        console.log(data);
-        changeAllComplete();        
+        if(data.result == 1) {
+          // console.log(allTrue.value);
+          changeAllComplete();  
+        }
       })
       .catch()
     }
@@ -227,6 +243,73 @@ export default {
     }
     getTotal();
 
+    // 검색 기능
+    // 현재 생성된 목록이 검색으로 된 것인지
+    // 아니면 검색없이 일반적인 목록인지를 구분하는 변수
+    const searchActive = ref(false);
+    // 검색어
+    const searchTxt = ref('');
+    // 잦은 검색 php 요청을 한느 것을 방지
+    // 일정 시간 딜레이를 줘서 php 부하를 줄여주는 용도
+    let searchTimer = null;
+    // searchTxt가 변하는 것을 감시
+    watch(searchTxt, () => {
+      clearTimeout(searchTimer);
+      if(searchTxt.value !== '') {
+        searchActive.value = true;
+        searchTimer =  setTimeout(() => {
+          // 검색어와 동일한 내용을 php를 이용해서
+          // 전체 개수를 파악(data_total_search.php)
+        getTotalSearch();
+        }, 2000);
+      } else {
+        searchActive.value = false;
+        getTotal();
+      }
+    });
+
+    const getTotalSearch = () => {
+      clearTimeout(searchTimer);
+      fetch(`http://paragon.dothome.co.kr/data_total_search.php?title=${searchTxt.value}`)
+      .then(res => res.json() )
+      .then(data => {
+        data_total.value = data.total;
+        //
+        page_total.value = Math.ceil(data_total.value / data_count.value);
+        // 시작 페이지는 1페이지로 셋팅
+        page_now.value = 1;
+        // 실제 내용 가져오기 실행
+        searchTodo();
+      })
+      .catch()
+
+      // 검색에 해당되는 내용을 목록으로 가지고 오는 php 실행
+      // data_read_search.php
+      
+    }
+
+      const searchTodo = () => {
+        fetch(`http://paragon.dothome.co.kr/data_read_search.php?page_now=${page_now.value}&data_count=${data_count.value}&title=${searchTxt.value}`)
+        .then(res => res.json() )
+        .then(data => {
+          // 검색된 배열을 받아서 todos를 업뎃
+          todos.value = data.result;
+          // complete 를 '0'
+          
+          allTrue.value = 0;
+          allComplete.value = false;
+          for(let item of todos.value) {
+            if(item.complete === '0') {
+              item.active = false;
+            } else {
+              item.active = true;
+              allTrue.value++;
+            }
+          }      
+          changeAllComplete();
+        })
+        .catch()
+      }
 
 
 
@@ -246,7 +329,10 @@ export default {
 
       toggleTodo,
       toggleAllComplete,
-      allComplete
+      allComplete,
+
+      searchTxt,
+      getTotalSearch
 
     }
   }
@@ -270,6 +356,11 @@ export default {
 .active {
   background-color: palevioletred;
   color: aliceblue;
+}
+
+.search {
+  width: 50%;
+  float: right;
 }
 
 </style>

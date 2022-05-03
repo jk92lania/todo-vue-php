@@ -27,19 +27,17 @@
       
     </div>
 
-      <!-- 안내창 -->
-      <ToastBox :message="toastMessage" v-if="toastShow" />
+      
   </div>
 </template>
 
 <script>
-  import {reactive, ref, onUnmounted} from 'vue'
+  import {reactive} from 'vue'
   import {useRouter} from 'vue-router'
-  import ToastBox from '@/components/ToastBox.vue'
+  import {useToast} from '@/composables/toast.js'
+  
+  
 export default {
-  components : {
-    ToastBox
-  },
   
   setup() {
     const router = useRouter();
@@ -48,24 +46,12 @@ export default {
       body : ''
     });
 
-    const toastMessage = ref('');
-    const toastShow = ref(false);
-    // 타이머로 제어
-    const toastId = ref(null);
-
-    const triggerToast = (_m) => {
-      toastMessage.value = _m;
-      toastShow.value = true;
-      toastId.value = setTimeout(() => {
-        toastShow.value = false;
-        toastMessage.value = '';
-        clearTimeout(toastId.value);
-      }, 2000);
-    }
-
-    onUnmounted (()=> {      
-      clearTimeout(toastId.value);
-    })
+    // 안내문
+    const {
+        toastMessage,
+        toastShow,
+        triggerToast
+    } = useToast();
 
     const onSubmit = () => {
       // 제목 없을 시 중지

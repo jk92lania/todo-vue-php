@@ -5,9 +5,10 @@
     </div>
     <div class="card-body">
       <h4 class="card-title">{{todo.title}}</h4>
-      <p class="card-text">{{todo.body}}</p>
-      <p class="card-text">{{todo.complete == 1 ? "달성" : "진행중"}}</p>
-      <p class="card-text">{{todo.id}}</p>
+      <p class="card-text">
+          {{todo.body}}
+        </p>
+      <p class="card-text">{{todo.complete === '0' ? "진행중" : "완료"}}</p>
       <div class="btn-group" role="group">
         <button type="button" class="btn btn-warning" @click="editTodo(todo.id)">수정</button>
         <button type="button" class="btn btn-danger" @click="openModal(todo.id)">삭제</button>

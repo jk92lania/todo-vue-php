@@ -35,23 +35,19 @@
       
     </div>
     
-      <!-- 안내창 -->
-      <ToastBox :message="toastMessage" v-if="toastShow" />
+      
   </div>
 </template>
 
 <script>
-  import {reactive, ref, onUnmounted, computed } from 'vue'
+  import {reactive, computed } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
-  import ToastBox from '@/components/ToastBox.vue'
   import _ from 'lodash'
+  import {useToast} from '@/composables/toast.js'
 
 
 
 export default {
-  components : {
-    ToastBox
-  },
   setup() {
     const route = useRoute();
 
@@ -76,24 +72,13 @@ export default {
     });
 
     
-    const toastMessage = ref('');
-    const toastShow = ref(false);
-    // 타이머로 제어
-    const toastId = ref(null);
+    // 안내문
+    const {
+        toastMessage,
+        toastShow,
+        triggerToast
+    } = useToast();
 
-    const triggerToast = (_m) => {
-      toastMessage.value = _m;
-      toastShow.value = true;
-      toastId.value = setTimeout(() => {
-        toastShow.value = false;
-        toastMessage.value = '';
-        clearTimeout(toastId.value);
-      }, 2000);
-    }
-
-    onUnmounted (()=> {      
-      clearTimeout(toastId.value);
-    })
 
     // console.log(route.params.id);
     // id를 전달하고 자료를 받아온다
