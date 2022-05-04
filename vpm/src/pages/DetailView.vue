@@ -15,7 +15,10 @@
         <button type="button" class="btn btn-primary" @click="moveList">목록보기</button>
       </div>
   </div>
-  <ModalWin v-if="showModal" @close="closeModal" @delete="deleteTodo" />
+  <teleport to="#popup">
+    <ModalWin v-if="showModal" @close="closeModal" @delete="deleteTodo" />
+
+  </teleport>
   </div>
 </template>
 
