@@ -64,7 +64,7 @@
     <teleport to="#popup">
       <ModalWin v-if="showModal" @close="closeModal" @delete="deleteTodo">
         <template v-slot:title>할일 삭제</template>
-        <template v-slot:body>{{deleteId}} 정말 삭제하시겠습니까?</template>
+        <template v-slot:body>정말 삭제하시겠습니까?</template>
       </ModalWin>
 
     </teleport>
